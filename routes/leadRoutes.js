@@ -1,4 +1,3 @@
-// routes/leadRoutes.js
 import express from 'express';
 import Lead from '../models/Lead.js';
 import axios from 'axios';
@@ -27,7 +26,52 @@ router.post('/upload', async (req, res) => {
   }
 });
 
-// Optional: GET /api/leads/stats for dashboard
+// GET /api/leads - fetch all leads
+router.get('/', async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json(leads);
+  } catch (err) {
+    console.error('Get leads error:', err);
+    res.status(500).json({ error: 'Failed to fetch leads' });
+  }
+});
+
+// POST /api/leads - add single lead
+router.post('/', async (req, res) => {
+  try {
+    const newLead = new Lead(req.body);
+    await newLead.save();
+    res.status(201).json({ success: true, lead: newLead });
+  } catch (err) {
+    console.error('Add lead error:', err);
+    res.status(500).json({ error: 'Failed to add lead' });
+  }
+});
+
+// PUT /api/leads/:id - update lead
+router.put('/:id', async (req, res) => {
+  try {
+    await Lead.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update lead error:', err);
+    res.status(500).json({ error: 'Failed to update lead' });
+  }
+});
+
+// DELETE /api/leads/:id - delete lead
+router.delete('/:id', async (req, res) => {
+  try {
+    await Lead.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete lead error:', err);
+    res.status(500).json({ error: 'Failed to delete lead' });
+  }
+});
+
+// GET /api/leads/stats - dashboard stats
 router.get('/stats', async (req, res) => {
   try {
     const total = await Lead.countDocuments();
